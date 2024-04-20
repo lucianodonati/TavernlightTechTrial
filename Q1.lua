@@ -1,20 +1,28 @@
--- Seems to set for the passed in player a flag of -1 and a magic number of 1000 of unknown meaning (perhaps a delay in ms?)
-local function releaseStorage(player)
+-- Sets the flag for the given player (Still not sure what the 1000 is..)
+local function setStorageFlag(player)
+    player:setStorageValue(1000, 1)
+end
+
+-- Clears the flag (Why do we need a flag?)
+local function clearStorageFlag(player)
     player:setStorageValue(1000, -1)
 end
 
--- Seems to be an event called for players on Log out
+-- Checks for the flag
+-- Removes the need to remember the value for the flag every time you use it
+local function isStorageFlagSet(player)
+    return player:getStorageValue(1000) == 1
+end
+
+-- Same code as before, but cleaner.
+-- Still don't know why we use an event or why do we have flags for this.
 function onLogout(player)
-    -- If flag is set, we need to clear it on logout.
-    if player:getStorageValue(1000) == 1 then
-        -- Instead of calling the function, we subscribe to an event. Not sure why, need more context.
-        addEvent(releaseStorage, 1000, player)
+    if isStorageFlagSet(player) then
+        addEvent(clearStorageFlag, 1000, player)
     end
     return true
 end
 
--- Thoughts: I don't see an aparent problem with the code without further context. 
--- Maybe I'd rename the functions or refactor if I knew why do we need to "releaseStorage" on logout.
--- Also the use of events is unclear, I'd need more context from the codebase.
--- Perhaps the flag implementation should be modified so that you don't have to use magic numbers like 1 and -1
--- and remember 1 is for released and -1 for dirty or vice-versa.
+-- Final Thouhts: Without much context there isn't much I can do. 
+-- Not a fan of flags myself but if we need to, I'd make a bitwise set of masks for all the flags and implement a wrapper to use them
+
