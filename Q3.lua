@@ -1,20 +1,17 @@
--- Immediatelly there's a problem with the function name, what's sth? maybe an abbreviation of "something"?
--- This function seems to remove a member from a player's party, needs to be renamed to something like "RemoveFromParty"
+-- Removes given memberID from partLead's party.
+function RemoveFromParty(partyLead, toBeRemovedMemberId)
+-- With more context I'd move this to somewhere where partyLead is the local self and I don't need to pass it around
 
--- There's a dependency issue with the function: It's supposed to remove a member from a party but it is not given the dependencies to do so. 
--- It has to go and create it's own player, to then call getParty() to only then do it's job.
--- This needs to be moved to the player's scope and refactored to something like RemoveFromParty(Player member)
+    local party = partyLead:getParty()
+    local partyMembers = party:getPartyMembers();
 
--- Seems that party members are stored in a map or dictionary, what's the key? an ID? Why do we use a "for k,v" if we never use the key value?
--- I'd assume k is the party member's "playerId" and v is the instanced Player() so that we can reference it when needed. 
--- If not, I'd make that or a simmilar change in :Party first.
-function do_sth_with_PlayerParty(playerId, membername)
-    player = Player(playerId)
-    local party = player:getParty()
-
-    for k,v in pairs(party:getMembers()) do
-        if v == Player(membername) then
-            party:removeMember(Player(membername))
+-- This requires to break down parties storage implementation into two paired arrays allowing to traverse them individually.
+-- removeMemberByID() also removes the party member player instance at the same index. 
+-- This allows to traverse players lists without having to accomodate heap space for their instances.
+-- For the rest of the codebase, "party" can continue to be a set/dictionary.
+    for memberID in partyMembers do
+        if memberID == toBeRemovedMemberId then
+            party:removeMemberByID(memberID)
         end
     end
 end
