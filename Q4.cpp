@@ -1,20 +1,15 @@
-// Function seems to be adding an item to a player
-
 void Game::addItemToPlayer(const std::string& recipient, uint16_t itemId)
 {
     Player* player = g_game.getPlayerByName(recipient);
     if (!player) {
-        // When the player isn't loaded and empty new constructor is called
         player = new Player(nullptr);
-        // And then loaded by reference with the recipient's state
         if (!IOLoginData::loadPlayerByName(player, recipient)) {
-            // If we can't load a player we can't continue, but we should release the memory allocated above.
+            delete player; // Release player nullptr constructor allocation
             return;
         }
     }
 
-    // This creates an instance of the item that will be given to the player
-    Item* item = Item::CreateItem(itemId); // Likely allocating memory in the process
+    Item* item = Item::CreateItem(itemId);
     if (!item) {
         return;
     }
@@ -22,8 +17,9 @@ void Game::addItemToPlayer(const std::string& recipient, uint16_t itemId)
     g_game.internalAddItem(player->getInbox(), item, INDEX_WHEREEVER, FLAG_NOLIMIT);
 
     if (player->isOffline()) {
-        IOLoginData::savePlayer(player); // Counterpart of loadPlayerByName()
+        IOLoginData::savePlayer(player);
     }
 
-    // and we leave scope below without clearing any memory.
+    delete item; // Assuming Item::CreateItem() calls new and doesn't clean up
+    delete player; // Release loaded player allocation
 }
